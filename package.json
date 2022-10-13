@@ -1,0 +1,20 @@
+{
+  "name": "nocode",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -rf node_modules **/*/node_modules",
+    "dev": "turbo run dev",
+    "dev:editor": "pnpm -C ./packages/web-editor dev",
+    "dev:comp": "pnpm -C ./packages/web-components dev",
+    "dev:server": "pnpm -C ./packages/web-server start:dev",
+    "build:editor": "pnpm -C ./packages/web-editor build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "turbo": "^1.5.6"
+  }
+}
