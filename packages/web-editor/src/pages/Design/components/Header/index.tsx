@@ -1,7 +1,7 @@
 
 export default function Header() {
 	return (
-		<div className=" fixed flex w-full justify-between">
+		<div className="flex w-full justify-between items-center h-[54px] bg-red-400">
 			<div>
 				<span>Zoe</span>
 				<span>标题</span>
