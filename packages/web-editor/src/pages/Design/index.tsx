@@ -1,3 +1,4 @@
+import { useEffect, useReducer } from "react";
 import Center from "./Center";
 import Header from "./Header";
 import Left from "./Left";
@@ -9,6 +10,14 @@ import { useCanvas } from "./store/hooks";
 export default function Design() {
 
 	const canvas = useCanvas()
+	const [,forceUpdate] = useReducer((x) => x + 1, 0)
+
+	useEffect(() => {
+		const unsubscribe = canvas.subscribe(forceUpdate)
+		return () => {
+			unsubscribe()
+		}
+	}, [])
 
 	return (
 		<div className="flex flex-col min-w-[1024px] overflow-x-auto h-screen">

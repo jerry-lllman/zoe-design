@@ -20,8 +20,8 @@ export default function Center() {
 					<div style={{ width: style.width, height: style.height }} >
 						{
 							components.map((item, index) => (
-								<div key={index}>
-									{item.value}
+								<div key={item.id}>
+									{item.value} + {item.id}
 								</div>
 							))
 						}

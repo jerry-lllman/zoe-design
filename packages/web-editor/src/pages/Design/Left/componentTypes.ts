@@ -1,3 +1,4 @@
+import { uniqueId } from "@web/tools"
 
 enum CLASSIFY {
 	WORDS,
@@ -25,6 +26,7 @@ export const componentsClass = [
 
 export const textComponentsJson = [
 	{
+		id: uniqueId(),
 		type: COMPONENT_TYPE.TEXT,
 		rootType: CLASSIFY.WORDS,
 		title: '标题',
@@ -40,6 +42,7 @@ export const textComponentsJson = [
 		}
 	},
 	{
+		id: uniqueId(),
 		type: COMPONENT_TYPE.TEXT,
 		rootType: CLASSIFY.WORDS,
 		title: '文本',
