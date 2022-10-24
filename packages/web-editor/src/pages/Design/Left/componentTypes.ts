@@ -24,6 +24,8 @@ export const componentsClass = [
 ]
 
 
+export type ComponentType = typeof textComponentsJson[0]
+
 export const textComponentsJson = [
 	{
 		id: uniqueId(),
@@ -33,8 +35,8 @@ export const textComponentsJson = [
 		value: '请输入标题',
 		icon: '',
 		style: {
-			top: 0,
-			left: 0,
+			top: 100,
+			left: 100,
 			width: 100,
 			height: 30,
 			fontSize: 16,
