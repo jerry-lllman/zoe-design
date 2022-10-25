@@ -1,7 +1,8 @@
-import _ from 'lodash-es'
+import _, { cloneDeep } from 'lodash-es'
 import { uniqueId } from '@web/tools'
 
 import { ComponentType, textComponentsJson } from "../Left/componentTypes"
+
 function getDefaultCanvas() {
 	return {
 		title: '未命名',
@@ -18,6 +19,31 @@ function getDefaultCanvas() {
 	}
 }
 
+
+
+
+interface Block {
+	type: string,
+	grips: {
+		east: boolean,
+		southeast: boolean,
+		south: boolean,
+		southwest: boolean,
+		west: boolean,
+		northwest: boolean,
+		north: boolean,
+		northeast: boolean
+	},
+	style: {
+		top: number,
+		left: number,
+		width: number,
+		height: number
+	}
+}
+
+type BLOCK_STATUS = 'hide' | 'static' | 'moving'
+
 export interface CanvasType {
 	[x: string]: any
 	components: ComponentType[]
@@ -30,8 +56,8 @@ export default class Canvas {
 	private forceUpdate: Function | null = null
 	// 选中的组件
 	private activeComponentIds: Set<string> = new Set()
-	// 实际拖拽的组件的样式
-	private dragBlock: any
+
+	private blockStatus: BLOCK_STATUS  = 'hide'
 
 	constructor(_canvas = getDefaultCanvas()) {
 		this.canvas = _canvas
@@ -53,6 +79,7 @@ export default class Canvas {
 		this.canvas.components.push(_.cloneDeep({ ...component, id }))
 		this.clearActiveComponents()
 		this.addActiveComponent(id)
+		this.updateBlockStatus('static')
 		this.updateApp()
 	}
 
@@ -97,6 +124,7 @@ export default class Canvas {
 	// 清空选中的组件
 	clearActiveComponents() {
 		this.activeComponentIds.clear()
+		this.updateBlockStatus('hide')
 		this.updateApp()
 	}
 
@@ -106,13 +134,20 @@ export default class Canvas {
 
 		this.clearActiveComponents()
 		this.addActiveComponent(componentId)
+		this.updateBlockStatus('static')
 		this.updateApp()
 	}
 
-	// 由选中的组件计算出组成的拖拽块的大小
-	// todo: 需要更新到实际拖拽的 dragBlock 变量上
+	// 更新拖拽块的状态
+	updateBlockStatus(status: BLOCK_STATUS) {
+		this.blockStatus = status
+		this.updateApp()
+	}
+
+	// 获取真实拖拽块的信息
 	getDragBlockInfo() {
 		const dragBlockInfo = {
+			blockStatus: this.blockStatus,	
 			type: '',
 			grips: {
 				east: true,
@@ -125,27 +160,24 @@ export default class Canvas {
 				northeast: true
 			},
 			style: {
-				top: 0,
-				left: 0,
-				width: 0,
-				height: 0
-			}
+				top: Infinity,
+				left: Infinity,
+				width: -Infinity,
+				height: -Infinity
+			}	
 		}
 		const components = this.getActiveComponents()
 		const componentCount = components.length
 		if (componentCount === 0) return dragBlockInfo
 
-		const getMax = (prev: any, next: any) => {
-			Object.keys(prev).forEach(key => {
-				prev[key] = Math.max(prev[key], next[key])
-			})
-
-			return prev
-		}
-
 		components.forEach(item => {
 			dragBlockInfo.type = item.type
-			dragBlockInfo.style = getMax(dragBlockInfo.style, item.style) as unknown as typeof dragBlockInfo.style
+			dragBlockInfo.style = {
+				top: Math.min(dragBlockInfo.style.top, item.style.top),
+				left: Math.min(dragBlockInfo.style.left, item.style.left),
+				width: Math.max(dragBlockInfo.style.width, item.style.width),
+				height: Math.max(dragBlockInfo.style.height, item.style.height)
+			}
 		})
 
 		if (componentCount > 1) {
@@ -156,3 +188,4 @@ export default class Canvas {
 		return dragBlockInfo
 	}
 }
+
