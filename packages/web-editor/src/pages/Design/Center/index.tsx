@@ -1,4 +1,5 @@
 import classNames from "classnames"
+import React from "react"
 
 import { useCanvasByContext } from "../store/hooks"
 import DragBlock from "./DragBlock"
@@ -18,6 +19,11 @@ export default function Center() {
 		}
 	}
 
+	const addActiveComponent = (id: string) => {
+		return (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+			canvas.setSelectedComponentId(id, !e.metaKey)
+		}
+	}
 
 	return (
 		<div
@@ -42,7 +48,7 @@ export default function Center() {
 							{
 								components.map((item) => (
 									<div key={item.id} className="absolute" style={{ ...item.style }}
-										onClick={() => canvas.setSelectedComponentId(item.id)}
+										onClick={addActiveComponent(item.id)}
 									>
 										<span>{item.value}</span>
 									</div>

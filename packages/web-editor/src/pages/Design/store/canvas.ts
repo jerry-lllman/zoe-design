@@ -1,7 +1,9 @@
-import _, { cloneDeep } from 'lodash-es'
+import _, { cloneDeep, max } from 'lodash-es'
 import { uniqueId } from '@web/tools'
 
 import { ComponentType, textComponentsJson } from "../Left/componentTypes"
+import React from 'react'
+
 
 function getDefaultCanvas() {
 	return {
@@ -57,7 +59,7 @@ export default class Canvas {
 	// 选中的组件
 	private activeComponentIds: Set<string> = new Set()
 
-	private blockStatus: BLOCK_STATUS  = 'hide'
+	private blockStatus: BLOCK_STATUS = 'hide'
 
 	constructor(_canvas = getDefaultCanvas()) {
 		this.canvas = _canvas
@@ -84,11 +86,20 @@ export default class Canvas {
 	}
 
 	// 移动更新组件位置
-	updateDragStyle(style: any) {
+	updateActiveComponentsStyle(style: React.CSSProperties) {
+
 		this.getActiveComponents().forEach(component => {
-			_.merge(component.style, style)
+			Object.keys(style).forEach((key) => {
+				// @ts-ignore
+				component.style[key] += style[key]
+			})
 		})
 		this.updateApp()
+	}
+
+	// 设置已选中的组件
+	setActiveComponents(component: ComponentType) {
+
 	}
 
 	// 更新画布
@@ -129,10 +140,9 @@ export default class Canvas {
 	}
 
 	// 选中单个组件
-	setSelectedComponentId(componentId: string) {
+	setSelectedComponentId(componentId: string, single = true) {
 		if (this.activeComponentIds.has(componentId)) return
-
-		this.clearActiveComponents()
+		single && this.clearActiveComponents()
 		this.addActiveComponent(componentId)
 		this.updateBlockStatus('static')
 		this.updateApp()
@@ -147,7 +157,7 @@ export default class Canvas {
 	// 获取真实拖拽块的信息
 	getDragBlockInfo() {
 		const dragBlockInfo = {
-			blockStatus: this.blockStatus,	
+			blockStatus: this.blockStatus,
 			type: '',
 			grips: {
 				east: true,
@@ -164,22 +174,29 @@ export default class Canvas {
 				left: Infinity,
 				width: -Infinity,
 				height: -Infinity
-			}	
+			}
 		}
 		const components = this.getActiveComponents()
 		const componentCount = components.length
 		if (componentCount === 0) return dragBlockInfo
 
+		// 拖拽组件的 width 获取：每个组件都计算出自己的 right(left + width) ，最后通过 maxRight - minLeft 就能获得拖拽的宽度
+		let maxRight = -Infinity
+		// height 获取方式同理
+		let maxHeight = -Infinity
+
 		components.forEach(item => {
 			dragBlockInfo.type = item.type
-			dragBlockInfo.style = {
-				top: Math.min(dragBlockInfo.style.top, item.style.top),
-				left: Math.min(dragBlockInfo.style.left, item.style.left),
-				width: Math.max(dragBlockInfo.style.width, item.style.width),
-				height: Math.max(dragBlockInfo.style.height, item.style.height)
-			}
+			dragBlockInfo.style.top = Math.min(dragBlockInfo.style.top, item.style.top)
+			dragBlockInfo.style.left = Math.min(dragBlockInfo.style.left, item.style.left)
+
+			maxRight = Math.max(maxRight, item.style.left + item.style.width)
+			maxHeight = Math.max(maxHeight, item.style.top + item.style.height)
 		})
 
+		dragBlockInfo.style.width = maxRight - dragBlockInfo.style.left
+		dragBlockInfo.style.height = maxHeight - dragBlockInfo.style.top
+		
 		if (componentCount > 1) {
 			// GROUP 需要定义成常量
 			dragBlockInfo.type = 'GROUP'

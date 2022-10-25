@@ -1,4 +1,5 @@
 import { uniqueId } from "@web/tools"
+import React from "react"
 
 enum CLASSIFY {
 	WORDS,
@@ -23,8 +24,25 @@ export const componentsClass = [
 	}
 ]
 
+export interface ComponentStyleType {
+	top: number,
+	left: number,
+	width: number,
+	height: number,
+	fontSize?: number,
+	fontWeight?: number
+}
 
-export type ComponentType = typeof textComponentsJson[0]
+export interface ComponentType {
+	id: string,
+	type: COMPONENT_TYPE,
+	rootType: CLASSIFY,
+	title: string,
+	value: string,
+	icon: any, // todo
+	style: ComponentStyleType
+}
+
 
 export const textComponentsJson = [
 	{

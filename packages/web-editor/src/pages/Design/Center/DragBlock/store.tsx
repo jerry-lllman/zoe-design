@@ -17,7 +17,7 @@ export default function useDragBlockStore() {
 			
 			const { style } = canvas.getDragBlockInfo()
 			canvas.updateBlockStatus('moving')
-			canvas.updateDragStyle({ left: style.left + disX, top: style.top + disY })
+			canvas.updateActiveComponentsStyle({ left: disX, top: disY })
 
 			// 更新起点
 			startX = pageX
