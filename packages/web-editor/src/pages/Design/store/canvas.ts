@@ -1,7 +1,7 @@
-import _, { cloneDeep, max } from 'lodash-es'
+import _ from 'lodash-es'
 import { uniqueId } from '@web/tools'
 
-import { ComponentType, textComponentsJson } from "../Left/componentTypes"
+import { ComponentType, COMPONENT_TYPE, textComponentsJson } from "../Left/componentTypes"
 import React from 'react'
 
 
@@ -44,7 +44,13 @@ interface Block {
 	}
 }
 
-type BLOCK_STATUS = 'hide' | 'static' | 'moving'
+
+export type DragGripStatusType = 'east' | 'southeast' | 'south' | 'southwest' | 'west' | 'northwest' | 'north' | 'northeast'
+
+export interface DragBlockStatusType {
+	block: 'static' | 'moving' | 'hide'
+	grip: DragGripStatusType | ''
+}
 
 export interface CanvasType {
 	[x: string]: any
@@ -59,7 +65,14 @@ export default class Canvas {
 	// 选中的组件
 	private activeComponentIds: Set<string> = new Set()
 
-	private blockStatus: BLOCK_STATUS = 'hide'
+	// 拖拽块的状态
+	private blockStatus: DragBlockStatusType = {
+		block: 'hide', // 整体块状态
+		grip: '' // 当前拖拽的抓手
+	}
+
+	// 组件的真实dom，目前主要是因为需要自适应 text 组件的高度所需要
+	private componentInstances = new WeakMap<ComponentType, HTMLDivElement>()
 
 	constructor(_canvas = getDefaultCanvas()) {
 		this.canvas = _canvas
@@ -81,7 +94,7 @@ export default class Canvas {
 		this.canvas.components.push(_.cloneDeep({ ...component, id }))
 		this.clearActiveComponents()
 		this.addActiveComponent(id)
-		this.updateBlockStatus('static')
+		this.updateBlockStatus({ block: 'static' })
 		this.updateApp()
 	}
 
@@ -92,6 +105,11 @@ export default class Canvas {
 			Object.keys(style).forEach((key) => {
 				// @ts-ignore
 				component.style[key] += style[key]
+
+				if (component.type === COMPONENT_TYPE.TEXT) {
+					const dom = this.componentInstances.get(component);
+					component.style.height = (dom as HTMLDivElement).clientHeight
+				}
 			})
 		})
 		this.updateApp()
@@ -135,7 +153,7 @@ export default class Canvas {
 	// 清空选中的组件
 	clearActiveComponents() {
 		this.activeComponentIds.clear()
-		this.updateBlockStatus('hide')
+		this.updateBlockStatus({ block: 'hide' })
 		this.updateApp()
 	}
 
@@ -144,13 +162,16 @@ export default class Canvas {
 		if (this.activeComponentIds.has(componentId)) return
 		single && this.clearActiveComponents()
 		this.addActiveComponent(componentId)
-		this.updateBlockStatus('static')
+		this.updateBlockStatus({ block: 'static' })
 		this.updateApp()
 	}
 
 	// 更新拖拽块的状态
-	updateBlockStatus(status: BLOCK_STATUS) {
-		this.blockStatus = status
+	updateBlockStatus(status: Partial<DragBlockStatusType>) {
+		if (status.block === 'static' || status.block === 'hide') {
+			status.grip = ''
+		}
+		this.blockStatus = { ...this.blockStatus, ...status }
 		this.updateApp()
 	}
 
@@ -159,6 +180,7 @@ export default class Canvas {
 		const dragBlockInfo = {
 			blockStatus: this.blockStatus,
 			type: '',
+			// TODO: 需要根据不同的组建给予不同的抓手，可能是在这里，也可能是在选中的时候处理
 			grips: {
 				east: true,
 				southeast: true,
@@ -187,22 +209,27 @@ export default class Canvas {
 
 		components.forEach(item => {
 			dragBlockInfo.type = item.type
+			// 取最小的 top、left 作为 拖拽块的 left、top
 			dragBlockInfo.style.top = Math.min(dragBlockInfo.style.top, item.style.top)
 			dragBlockInfo.style.left = Math.min(dragBlockInfo.style.left, item.style.left)
-
+			// 更新 maxRight、maxHeight
 			maxRight = Math.max(maxRight, item.style.left + item.style.width)
 			maxHeight = Math.max(maxHeight, item.style.top + item.style.height)
 		})
 
 		dragBlockInfo.style.width = maxRight - dragBlockInfo.style.left
 		dragBlockInfo.style.height = maxHeight - dragBlockInfo.style.top
-		
+
 		if (componentCount > 1) {
 			// GROUP 需要定义成常量
 			dragBlockInfo.type = 'GROUP'
 		}
 
 		return dragBlockInfo
+	}
+
+	setDomInstance(component: ComponentType, instance: HTMLDivElement | null) {
+		instance && this.componentInstances.set(component, instance)
 	}
 }
 

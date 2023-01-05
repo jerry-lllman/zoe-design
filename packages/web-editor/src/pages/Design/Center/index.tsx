@@ -1,9 +1,9 @@
-import classNames from "classnames"
 import React from "react"
 
 import { useCanvasByContext } from "../store/hooks"
 import DragBlock from "./DragBlock"
 
+import './index.less'
 
 export default function Center() {
 
@@ -46,11 +46,49 @@ export default function Center() {
 								{/* 背景，选中边框效果 */}
 							</div>
 							{
+								// 组件展示
 								components.map((item) => (
-									<div key={item.id} className="absolute" style={{ ...item.style }}
+									<div key={item.id} className="editor-element absolute z-[1] leading-[1] text-left" style={{ ...item.style }}
 										onClick={addActiveComponent(item.id)}
 									>
-										<span>{item.value}</span>
+										<div
+											className="element-inner relative w-full h-full text-[0]"
+											style={{
+												textAlign: 'left',
+												lineHeight: 1.2,
+												width: item.style.width,
+												height: item.style.height,
+
+												overflow: 'visible'
+											}}
+										>
+
+											<div className="element-inner-position absolute top-0 left-0 w-full h-full"	>
+												<div
+													className="element-inner-content"
+													style={{
+														width: item.style.width,
+														height: item.style.height
+
+													}}
+												>
+													<div
+														ref={ref => canvas.setDomInstance(item, ref)}
+														className="element-main inline-block"
+														style={{
+															fontSize: item.style.fontSize,
+														}}
+													>
+														<span
+														className="text"
+															style={{
+																fontSize: item.style.fontSize
+															}}
+														>{item.value}</span>
+													</div>
+												</div>
+											</div>
+										</div>
 									</div>
 								))
 							}
