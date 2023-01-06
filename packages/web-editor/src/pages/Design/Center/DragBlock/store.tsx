@@ -90,7 +90,6 @@ export default function useDragBlockStore() {
 				canvas.updateBlockStatus({ block: 'moving', grip: type })
 
 				const style = calculate({ width: disX, height: disY, top: disY, left: disX })[type]
-				console.log(style)
 				canvas.updateActiveComponentsStyle(style)
 
 				// 更新起点

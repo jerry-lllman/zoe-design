@@ -1,9 +1,25 @@
 import React from "react"
+import type { ComponentType } from "../LeftExpand/typing"
 
+import TextComponent from "../../../components/TextComponent"
+import ImageComponent from "../../../components/ImageComponent"
 import { useCanvasByContext } from "../store/hooks"
 import DragBlock from "./DragBlock"
 
 import './index.less'
+import { ImageComponentType } from "../LeftExpand/ImgLib/typing."
+import { TextComponentType } from "../LeftExpand/TextLib/typing"
+
+const renderComponents = {
+	text: TextComponent,
+	image: ImageComponent
+	// text(component: TextComponentType, ref?: React.Ref<HTMLDivElement>) {
+	// 	return <TextComponent component={component} ref={ref}/>
+	// },
+	// image(component: ImageComponentType) {
+	// 	return <ImageComponent component={component} />
+	// }
+}
 
 export default function Center() {
 
@@ -51,45 +67,8 @@ export default function Center() {
 									<div key={item.id} className="editor-element absolute z-[1] leading-[1] text-left" style={{ ...item.style }}
 										onClick={addActiveComponent(item.id)}
 									>
-										<div
-											className="element-inner relative w-full h-full text-[0]"
-											style={{
-												textAlign: 'left',
-												lineHeight: 1.2,
-												width: item.style.width,
-												height: item.style.height,
-
-												overflow: 'visible'
-											}}
-										>
-
-											<div className="element-inner-position absolute top-0 left-0 w-full h-full"	>
-												<div
-													className="element-inner-content"
-													style={{
-														width: item.style.width,
-														height: item.style.height
-
-													}}
-												>
-													<div
-														ref={ref => canvas.setDomInstance(item, ref)}
-														className="element-main inline-block"
-														style={{
-															fontSize: item.style.fontSize,
-															minHeight: (item.style.height / (item.style.height / (item.style.fontSize)))
-														}}
-													>
-														<span
-														className="text"
-															style={{
-																fontSize: item.style.fontSize
-															}}
-														>{item.value}</span>
-													</div>
-												</div>
-											</div>
-										</div>
+										{item.type === 'text' && <TextComponent component={item} ref={ref => canvas.setDomInstance(item, ref)} />}
+										{item.type === 'image' && <ImageComponent component={item} />}
 									</div>
 								))
 							}

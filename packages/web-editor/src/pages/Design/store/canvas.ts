@@ -1,8 +1,12 @@
 import _, { clone, isEmpty, isNil } from 'lodash-es'
-import { uniqueId } from '@web/tools'
+import { randomId } from '@web/tools'
+import { ComponentType } from '../LeftExpand/typing'
 
-import { ComponentType, COMPONENT_TYPE, textComponentsJson } from "../Left/componentTypes"
-
+interface EditorType {
+	title: string,
+	style: React.CSSProperties,
+	components: ComponentType[]
+}
 
 function getDefaultCanvas() {
 	return {
@@ -23,25 +27,25 @@ function getDefaultCanvas() {
 
 
 
-interface Block {
-	type: string,
-	grips: {
-		east: boolean,
-		southeast: boolean,
-		south: boolean,
-		southwest: boolean,
-		west: boolean,
-		northwest: boolean,
-		north: boolean,
-		northeast: boolean
-	},
-	style: {
-		top: number,
-		left: number,
-		width: number,
-		height: number
-	}
-}
+// interface Block {
+// 	type: string,
+// 	grips: {
+// 		east: boolean,
+// 		southeast: boolean,
+// 		south: boolean,
+// 		southwest: boolean,
+// 		west: boolean,
+// 		northwest: boolean,
+// 		north: boolean,
+// 		northeast: boolean
+// 	},
+// 	style: {
+// 		top: number,
+// 		left: number,
+// 		width: number,
+// 		height: number
+// 	}
+// }
 
 
 export type DragGripStatusType = 'east' | 'southeast' | 'south' | 'southwest' | 'west' | 'northwest' | 'north' | 'northeast'
@@ -88,7 +92,7 @@ function getGrips(components: ComponentType[]) {
 	// TODO: 这里到底是放到生成组件的时候，还是单独写个生成函数呢（按照个人感觉而言写单独的生成函数会比较好一点）
 	const comp = components[0]
 
-	if (comp.type === COMPONENT_TYPE.TEXT) {
+	if (comp.type === 'text') {
 		return {
 			east: true,
 			southeast: true,
@@ -146,8 +150,8 @@ export default class Canvas {
 	}
 
 	// 新增组件
-	addComponent(component: any) {
-		const id = uniqueId()
+	addComponent(component: ComponentType) {
+		const id = randomId()
 		this.canvas.components.push(_.cloneDeep({ ...component, id }))
 		this.clearActiveComponents()
 		this.addActiveComponent(id)
@@ -167,19 +171,21 @@ export default class Canvas {
 
 			const isZoomGrip = ['southeast', 'southwest', 'northwest', 'northeast'].includes(this.blockStatus.grip)
 
-			if (component.type === COMPONENT_TYPE.TEXT && isZoomGrip && !isNil(style.width) && style.width !== 0) {
-				// 1. 计算出一行能容下几个字 										 										  													oneLineTextCount = oldWidth / oldFontSize
-				// 2. 根据新的 width 计算出新的 fontSize			  										 														newFontSize = newWidth / oneLineTextCount
-				// 3. 根据新的 fontSize * 原高度能容纳下的行数(oldHeight / oldFontSize)计算出新的 height						newHeight = newFontSize * (oldHeight / oldFontSize)
-
-				const oneLineTextCount = component.style.width / component.style.fontSize
-				const newFontSize = newStyle.width / oneLineTextCount
-				const newHeight = newFontSize * (component.style.height / component.style.fontSize)
-				newStyle.fontSize = newFontSize
-				newStyle.height = newHeight
-			} else {
-				// 当宽度改变时需要更新文本高度
-				newStyle.height = (this.componentInstances.get(component) as HTMLDivElement).clientHeight
+			if (component.type === 'text') {
+				if (isZoomGrip && !isNil(style.width) && style.width !== 0) {
+					// 1. 计算出一行能容下几个字 										 										  													oneLineTextCount = oldWidth / oldFontSize
+					// 2. 根据新的 width 计算出新的 fontSize			  										 														newFontSize = newWidth / oneLineTextCount
+					// 3. 根据新的 fontSize * 原高度能容纳下的行数(oldHeight / oldFontSize)计算出新的 height						newHeight = newFontSize * (oldHeight / oldFontSize)
+	
+					const oneLineTextCount = (component.style.width as number) / (component.style.fontSize as number)
+					const newFontSize = (newStyle.width as number) / oneLineTextCount
+					const newHeight = newFontSize * ((component.style.height as number) / (component.style.fontSize as number))
+					newStyle.fontSize = newFontSize
+					newStyle.height = newHeight
+				} else {
+					// 当宽度改变时字体可能会换行，所以需要更新根据文本的高度更新容器的高度
+					newStyle.height = (this.componentInstances.get(component) as HTMLDivElement).clientHeight
+				}
 			}
 			component.style = newStyle
 		})
@@ -273,22 +279,12 @@ export default class Canvas {
 		components.forEach(item => {
 			dragBlockInfo.type = item.type
 			// 取最小的 top、left 作为 拖拽块的 left、top
-			dragBlockInfo.style.top = Math.min(dragBlockInfo.style.top, item.style.top)
-			dragBlockInfo.style.left = Math.min(dragBlockInfo.style.left, item.style.left)
+			dragBlockInfo.style.top = Math.min(dragBlockInfo.style.top, (item.style.top as number))
+			dragBlockInfo.style.left = Math.min(dragBlockInfo.style.left, (item.style.left as number))
 			// 更新 maxRight、maxHeight
-			maxRight = Math.max(maxRight, item.style.left + item.style.width)
-			maxHeight = Math.max(maxHeight, item.style.top + item.style.height)
+			maxRight = Math.max(maxRight, (item.style.left as number) + (item.style.width as number))
+			maxHeight = Math.max(maxHeight, (item.style.top as number) + (item.style.height as number))
 		})
-
-
-		// const isZoomGrip = ['southeast', 'southwest', 'northwest', 'northeast'].includes(this.blockStatus.grip)
-		// if (components.length === 1 && components[0].type === COMPONENT_TYPE.TEXT && isZoomGrip) {
-		// 	// const elementHeight = this.componentInstances.get(components[0])?.clientHeight
-		// 	// maxHeight = elementHeight ? elementHeight + components[0].style.top : maxHeight
-		// 	const newFontSize = Math.floor(components[0].style.width / components[0].value.length)
-		// 	const textLine = Math.floor(components[0].style.height / (components[0].style.fontSize || 1)) || 1
-		// 	maxHeight = newFontSize * textLine + components[0].style.top
-		// }
 
 		dragBlockInfo.style.width = maxRight - dragBlockInfo.style.left
 		dragBlockInfo.style.height = maxHeight - dragBlockInfo.style.top
