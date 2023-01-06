@@ -29,7 +29,7 @@ export interface ComponentStyleType {
 	left: number,
 	width: number,
 	height: number,
-	fontSize?: number,
+	fontSize: number,
 	fontWeight?: number
 }
 
@@ -55,7 +55,7 @@ export const textComponentsJson = [
 		type: COMPONENT_TYPE.TEXT,
 		rootType: CLASSIFY.WORDS,
 		title: '标题',
-		value: '双',
+		value: '双击编辑标题内容',
 		icon: '',
 		style: {
 			top: 100,
@@ -71,10 +71,10 @@ export const textComponentsJson = [
 		type: COMPONENT_TYPE.TEXT,
 		rootType: CLASSIFY.WORDS,
 		title: '正文',
-		value: '双击编辑一小段征文',
+		value: '双击编辑一小段正文',
 		icon: '',
 		style: {
-			top: 0,
+			top: 100,
 			left: 0,
 			width: 298,
 			height: 38,

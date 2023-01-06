@@ -77,6 +77,7 @@ export default function Center() {
 														className="element-main inline-block"
 														style={{
 															fontSize: item.style.fontSize,
+															minHeight: (item.style.height / (item.style.height / (item.style.fontSize)))
 														}}
 													>
 														<span

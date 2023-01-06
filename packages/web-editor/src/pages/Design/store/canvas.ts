@@ -1,8 +1,7 @@
-import _ from 'lodash-es'
+import _, { clone, isEmpty, isNil } from 'lodash-es'
 import { uniqueId } from '@web/tools'
 
 import { ComponentType, COMPONENT_TYPE, textComponentsJson } from "../Left/componentTypes"
-import React from 'react'
 
 
 function getDefaultCanvas() {
@@ -57,6 +56,64 @@ export interface CanvasType {
 	components: ComponentType[]
 }
 
+
+function getGrips(components: ComponentType[]) {
+
+	if (isEmpty(components)) {
+		return {
+			east: true,
+			southeast: true,
+			south: true,
+			southwest: true,
+			west: true,
+			northwest: true,
+			north: true,
+			northeast: true
+		}
+	}
+
+	if (components.length > 1) {
+		return {
+			east: false,
+			southeast: true,
+			south: false,
+			southwest: true,
+			west: false,
+			northwest: true,
+			north: false,
+			northeast: true
+		}
+	}
+
+	// TODO: 这里到底是放到生成组件的时候，还是单独写个生成函数呢（按照个人感觉而言写单独的生成函数会比较好一点）
+	const comp = components[0]
+
+	if (comp.type === COMPONENT_TYPE.TEXT) {
+		return {
+			east: true,
+			southeast: true,
+			south: false,
+			southwest: true,
+			west: true,
+			northwest: true,
+			north: false,
+			northeast: true
+		}
+	}
+
+	return {
+		east: true,
+		southeast: true,
+		south: true,
+		southwest: true,
+		west: true,
+		northwest: true,
+		north: true,
+		northeast: true
+	}
+}
+
+
 export default class Canvas {
 	// 画布数据
 	private canvas: CanvasType
@@ -99,18 +156,32 @@ export default class Canvas {
 	}
 
 	// 移动更新组件位置
-	updateActiveComponentsStyle(style: React.CSSProperties) {
-
+	// TODO: style 类型需要更新
+	updateActiveComponentsStyle(style: { height?: number, width?: number, top?: number, left?: number }) {
 		this.getActiveComponents().forEach(component => {
+			const newStyle = clone(component.style)
 			Object.keys(style).forEach((key) => {
 				// @ts-ignore
-				component.style[key] += style[key]
-
-				if (component.type === COMPONENT_TYPE.TEXT) {
-					const dom = this.componentInstances.get(component);
-					component.style.height = (dom as HTMLDivElement).clientHeight
-				}
+				newStyle[key] += style[key]
 			})
+
+			const isZoomGrip = ['southeast', 'southwest', 'northwest', 'northeast'].includes(this.blockStatus.grip)
+
+			if (component.type === COMPONENT_TYPE.TEXT && isZoomGrip && !isNil(style.width) && style.width !== 0) {
+				// 1. 计算出一行能容下几个字 										 										  													oneLineTextCount = oldWidth / oldFontSize
+				// 2. 根据新的 width 计算出新的 fontSize			  										 														newFontSize = newWidth / oneLineTextCount
+				// 3. 根据新的 fontSize * 原高度能容纳下的行数(oldHeight / oldFontSize)计算出新的 height						newHeight = newFontSize * (oldHeight / oldFontSize)
+
+				const oneLineTextCount = component.style.width / component.style.fontSize
+				const newFontSize = newStyle.width / oneLineTextCount
+				const newHeight = newFontSize * (component.style.height / component.style.fontSize)
+				newStyle.fontSize = newFontSize
+				newStyle.height = newHeight
+			} else {
+				// 当宽度改变时需要更新文本高度
+				newStyle.height = (this.componentInstances.get(component) as HTMLDivElement).clientHeight
+			}
+			component.style = newStyle
 		})
 		this.updateApp()
 	}
@@ -168,7 +239,7 @@ export default class Canvas {
 
 	// 更新拖拽块的状态
 	updateBlockStatus(status: Partial<DragBlockStatusType>) {
-		if (status.block === 'static' || status.block === 'hide') {
+		if (status.block === 'hide') {
 			status.grip = ''
 		}
 		this.blockStatus = { ...this.blockStatus, ...status }
@@ -177,20 +248,13 @@ export default class Canvas {
 
 	// 获取真实拖拽块的信息
 	getDragBlockInfo() {
+		const components = this.getActiveComponents()
+
 		const dragBlockInfo = {
 			blockStatus: this.blockStatus,
 			type: '',
-			// TODO: 需要根据不同的组建给予不同的抓手，可能是在这里，也可能是在选中的时候处理
-			grips: {
-				east: true,
-				southeast: true,
-				south: true,
-				southwest: true,
-				west: true,
-				northwest: true,
-				north: true,
-				northeast: true
-			},
+			// TODO: 需要根据不同的组件给予不同的抓手，可能是在这里，也可能是在选中的时候处理
+			grips: getGrips(components),
 			style: {
 				top: Infinity,
 				left: Infinity,
@@ -198,9 +262,8 @@ export default class Canvas {
 				height: -Infinity
 			}
 		}
-		const components = this.getActiveComponents()
-		const componentCount = components.length
-		if (componentCount === 0) return dragBlockInfo
+
+		if (components.length === 0) return dragBlockInfo
 
 		// 拖拽组件的 width 获取：每个组件都计算出自己的 right(left + width) ，最后通过 maxRight - minLeft 就能获得拖拽的宽度
 		let maxRight = -Infinity
@@ -217,10 +280,20 @@ export default class Canvas {
 			maxHeight = Math.max(maxHeight, item.style.top + item.style.height)
 		})
 
+
+		// const isZoomGrip = ['southeast', 'southwest', 'northwest', 'northeast'].includes(this.blockStatus.grip)
+		// if (components.length === 1 && components[0].type === COMPONENT_TYPE.TEXT && isZoomGrip) {
+		// 	// const elementHeight = this.componentInstances.get(components[0])?.clientHeight
+		// 	// maxHeight = elementHeight ? elementHeight + components[0].style.top : maxHeight
+		// 	const newFontSize = Math.floor(components[0].style.width / components[0].value.length)
+		// 	const textLine = Math.floor(components[0].style.height / (components[0].style.fontSize || 1)) || 1
+		// 	maxHeight = newFontSize * textLine + components[0].style.top
+		// }
+
 		dragBlockInfo.style.width = maxRight - dragBlockInfo.style.left
 		dragBlockInfo.style.height = maxHeight - dragBlockInfo.style.top
 
-		if (componentCount > 1) {
+		if (components.length > 1) {
 			// GROUP 需要定义成常量
 			dragBlockInfo.type = 'GROUP'
 		}
