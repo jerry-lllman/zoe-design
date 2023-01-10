@@ -1,4 +1,4 @@
-import _, { clone, isEmpty, isNil } from 'lodash-es'
+import _ from 'lodash-es'
 import { randomId } from '@web/tools'
 import { ComponentType } from '../LeftExpand/typing'
 
@@ -63,7 +63,7 @@ export interface CanvasType {
 
 function getGrips(components: ComponentType[]) {
 
-	if (isEmpty(components)) {
+	if (_.isEmpty(components)) {
 		return {
 			east: true,
 			southeast: true,
@@ -119,10 +119,15 @@ function getGrips(components: ComponentType[]) {
 
 
 export default class Canvas {
+
 	// 画布数据
 	private canvas: CanvasType
 	// 更新页面函数
 	private forceUpdate: Function | null = null
+
+	// 是否选中画布背景
+	private activeBackground: boolean = false
+
 	// 选中的组件
 	private activeComponentIds: Set<string> = new Set()
 
@@ -139,9 +144,36 @@ export default class Canvas {
 		this.canvas = _canvas
 	}
 
+	// 更新画布
+	private updateApp() {
+		this.forceUpdate?.()
+	}
+	// 添加选中的组件
+	private addActiveComponent(actives: string | string[]) {
+		actives = _.isArray(actives) ? actives : [actives]
+		actives.forEach(id => this.activeComponentIds.add(id))
+	}
+
+	// 使用时订阅更新事件以保存 update 方法
+	subscribe(forceUpdate: Function) {
+		this.forceUpdate = forceUpdate
+		return () => {
+			this.forceUpdate = null
+		}
+	}
+
 	// 获取整个画布数据
 	getCanvas() {
 		return { ...this.canvas }
+	}
+
+	getIsActiveBackground() {
+		return this.activeBackground
+	}
+
+	setIsActiveBackground(value: boolean) {
+		this.activeBackground = value
+		this.updateApp()
 	}
 
 	// 获取所有组件数据
@@ -159,62 +191,10 @@ export default class Canvas {
 		this.updateApp()
 	}
 
-	// 移动更新组件位置
-	// TODO: style 类型需要更新
-	updateActiveComponentsStyle(style: { height?: number, width?: number, top?: number, left?: number }) {
-		this.getActiveComponents().forEach(component => {
-			const newStyle = clone(component.style)
-			Object.keys(style).forEach((key) => {
-				// @ts-ignore
-				newStyle[key] += style[key]
-			})
+	// // 设置已选中的组件
+	// setActiveComponents(component: ComponentType) {
 
-			const isZoomGrip = ['southeast', 'southwest', 'northwest', 'northeast'].includes(this.blockStatus.grip)
-
-			if (component.type === 'text') {
-				if (isZoomGrip && !isNil(style.width) && style.width !== 0) {
-					// 1. 计算出一行能容下几个字 										 										  													oneLineTextCount = oldWidth / oldFontSize
-					// 2. 根据新的 width 计算出新的 fontSize			  										 														newFontSize = newWidth / oneLineTextCount
-					// 3. 根据新的 fontSize * 原高度能容纳下的行数(oldHeight / oldFontSize)计算出新的 height						newHeight = newFontSize * (oldHeight / oldFontSize)
-	
-					const oneLineTextCount = (component.style.width as number) / (component.style.fontSize as number)
-					const newFontSize = (newStyle.width as number) / oneLineTextCount
-					const newHeight = newFontSize * ((component.style.height as number) / (component.style.fontSize as number))
-					newStyle.fontSize = newFontSize
-					newStyle.height = newHeight
-				} else {
-					// 当宽度改变时字体可能会换行，所以需要更新根据文本的高度更新容器的高度
-					newStyle.height = (this.componentInstances.get(component) as HTMLDivElement).clientHeight
-				}
-			}
-			component.style = newStyle
-		})
-		this.updateApp()
-	}
-
-	// 设置已选中的组件
-	setActiveComponents(component: ComponentType) {
-
-	}
-
-	// 更新画布
-	private updateApp() {
-		this.forceUpdate?.()
-	}
-
-	// 使用时订阅更新事件以保存 update 方法
-	subscribe(forceUpdate: Function) {
-		this.forceUpdate = forceUpdate
-		return () => {
-			this.forceUpdate = null
-		}
-	}
-
-	// 添加选中的组件
-	private addActiveComponent(actives: string | string[]) {
-		actives = _.isArray(actives) ? actives : [actives]
-		actives.forEach(id => this.activeComponentIds.add(id))
-	}
+	// }
 
 	// 获取被选中的组件
 	getActiveComponents() {
@@ -251,6 +231,46 @@ export default class Canvas {
 		this.blockStatus = { ...this.blockStatus, ...status }
 		this.updateApp()
 	}
+
+	// 存储组件真实 dom
+	setDomInstance(component: ComponentType, instance: HTMLDivElement | null) {
+		instance && this.componentInstances.set(component, instance)
+	}
+
+	// 移动更新组件位置
+	// TODO: style 类型需要更新
+	// TODO: 更新的值应该是修改以后的值，而不是增量的值
+	updateActiveComponentsStyle(style: { height?: number, width?: number, top?: number, left?: number }) {
+		this.getActiveComponents().forEach(component => {
+			const newStyle = _.clone(component.style)
+			Object.keys(style).forEach((key) => {
+				// @ts-ignore
+				newStyle[key] += style[key]
+			})
+
+			const isZoomGrip = ['southeast', 'southwest', 'northwest', 'northeast'].includes(this.blockStatus.grip)
+
+			if (component.type === 'text') {
+				if (isZoomGrip && !_.isNil(style.width) && style.width !== 0) {
+					// 1. 计算出一行能容下几个字 										 										  													oneLineTextCount = oldWidth / oldFontSize
+					// 2. 根据新的 width 计算出新的 fontSize			  										 														newFontSize = newWidth / oneLineTextCount
+					// 3. 根据新的 fontSize * 原高度能容纳下的行数(oldHeight / oldFontSize)计算出新的 height						newHeight = newFontSize * (oldHeight / oldFontSize)
+
+					const oneLineTextCount = (component.style.width as number) / (component.style.fontSize as number)
+					const newFontSize = (newStyle.width as number) / oneLineTextCount
+					const newHeight = newFontSize * ((component.style.height as number) / (component.style.fontSize as number))
+					newStyle.fontSize = newFontSize
+					newStyle.height = newHeight
+				} else {
+					// 当宽度改变时字体可能会换行，所以需要更新根据文本的高度更新容器的高度
+					newStyle.height = (this.componentInstances.get(component) as HTMLDivElement).clientHeight
+				}
+			}
+			component.style = newStyle
+		})
+		this.updateApp()
+	}
+
 
 	// 获取真实拖拽块的信息
 	getDragBlockInfo() {
@@ -295,10 +315,6 @@ export default class Canvas {
 		}
 
 		return dragBlockInfo
-	}
-
-	setDomInstance(component: ComponentType, instance: HTMLDivElement | null) {
-		instance && this.componentInstances.set(component, instance)
 	}
 }
 

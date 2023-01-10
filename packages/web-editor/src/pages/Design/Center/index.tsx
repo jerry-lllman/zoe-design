@@ -1,25 +1,10 @@
-import React from "react"
-import type { ComponentType } from "../LeftExpand/typing"
-
+import React, { useEffect } from "react"
 import TextComponent from "../../../components/TextComponent"
 import ImageComponent from "../../../components/ImageComponent"
 import { useCanvasByContext } from "../store/hooks"
 import DragBlock from "./DragBlock"
 
 import './index.less'
-import { ImageComponentType } from "../LeftExpand/ImgLib/typing."
-import { TextComponentType } from "../LeftExpand/TextLib/typing"
-
-const renderComponents = {
-	text: TextComponent,
-	image: ImageComponent
-	// text(component: TextComponentType, ref?: React.Ref<HTMLDivElement>) {
-	// 	return <TextComponent component={component} ref={ref}/>
-	// },
-	// image(component: ImageComponentType) {
-	// 	return <ImageComponent component={component} />
-	// }
-}
 
 export default function Center() {
 
@@ -29,23 +14,38 @@ export default function Center() {
 
 	const { style, components } = canvasData
 
-	const selectCanvas = (e: any) => {
-		if (e.target.id === 'editor-background') {
-			canvas.clearActiveComponents()
-		}
+	const selectCanvas = (e: React.MouseEvent<HTMLDivElement>) => {
+		canvas.clearActiveComponents()
+		canvas.setIsActiveBackground(true)
+		e.stopPropagation()
 	}
 
 	const addActiveComponent = (id: string) => {
 		return (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+			e.stopPropagation()
 			canvas.setSelectedComponentId(id, !e.metaKey)
+			canvas.setIsActiveBackground(false)
 		}
 	}
 
+	useEffect(() => {
+		const handler = () => canvas.getIsActiveBackground() && canvas.setIsActiveBackground(false)
+
+
+		const editorMainElement = document.getElementById('editor-main')
+		editorMainElement?.addEventListener('click', handler)
+
+		return () => {
+			editorMainElement?.removeEventListener('click', handler)
+		}
+	}, [])
+
 	return (
 		<div
-			className=" absolute  bg-neutral-400 left-[393px] top-0 right-[276px] bottom-0"
+			id="editor-main"
+			className=" absolute  bg-[#f0f3f4] left-[393px] top-0 right-[276px] bottom-0"
 		>
-			<div className="m-auto p-[30px] box-content" style={{ width: style.width, height: style.height }}>
+			<div className="relative m-auto mt-[60px] box-content" style={{ width: style.width, height: style.height }}>
 				<div
 					id="editor-wrapper"
 					className="m-auto relative"
@@ -59,7 +59,6 @@ export default function Center() {
 								style={{ width: style.width, height: style.height }}
 								onClick={selectCanvas}
 							>
-								{/* 背景，选中边框效果 */}
 							</div>
 							{
 								// 组件展示
@@ -78,6 +77,15 @@ export default function Center() {
 						<div><DragBlock /></div>
 					}
 				</div>
+				{
+					canvas.getIsActiveBackground() && (
+						<div
+							className=" absolute top-0 left-0 border-2 border-solid border-sky-400 shadow-[0_0_0_4px_rgb(61,105,246,24%)]"
+							style={{ width: style.width, height: style.height }}
+						>
+						</div>
+					)
+				}
 			</div>
 		</div>
 	)
