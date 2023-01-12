@@ -10,7 +10,7 @@ export default function LeftExpand() {
 	const leftContextValue = useContext(LeftContext)
 
 	return (
-		<div className="w-[328px] absolute z-10 top-0 bottom-0 left-[65px] shadow">
+		<div className="w-[328px] absolute z-10 top-0 bottom-0 left-[65px]">
 			{
 				libs[leftContextValue.leftActiveKey]()
 			}

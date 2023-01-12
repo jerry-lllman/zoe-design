@@ -7,7 +7,7 @@ export default function Right() {
 
 	return (
 		<div className="w-[276px] absolute top-0 right-0 bottom-0">
-			{canvas.getIsActiveBackground() && <CanvasSetting />}
+			{(canvas.getIsActiveBackground() || !canvas.getActiveComponents().length ) && <CanvasSetting />}
 		</div>
 	)
 }

@@ -1,0 +1,11 @@
+// before:absolute, before:top-0, before:left-0, before:h-full, before:w-1, before:bg-blue-600
+
+.component-block__lighting {
+	@apply before:absolute before:top-0 before:left-0 before:h-full before:w-1 before:bg-blue-600;
+}
+
+.component-block__hovered {
+	&:hover {
+		.component-block__lighting;
+	}
+}

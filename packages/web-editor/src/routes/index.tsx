@@ -1,7 +1,9 @@
+import React, { Suspense } from "react";
 import { BrowserRouter, useRoutes } from "react-router-dom";
 
-import Home from "../pages/Home";
-import Design from "../pages/Design";
+const Home = React.lazy(() => import("../pages/Home"))
+const Design = React.lazy(() => import("../pages/Design"))
+
 import NotFound from "../pages/NotFound";
 
 const App = () => {
@@ -9,11 +11,11 @@ const App = () => {
 	const element = useRoutes([
 		{
 			path: '/',
-			element: <Home />,
+			element: <Suspense fallback={<div>loading</div>}><Home /></Suspense>,
 		},
 		{
 			path: 'design',
-			element: <Design />
+			element: <Suspense fallback={<div>loading</div>}><Design /></Suspense>
 		},
 		{
 			path: '*',

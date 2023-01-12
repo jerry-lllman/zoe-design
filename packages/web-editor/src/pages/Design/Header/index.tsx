@@ -6,7 +6,7 @@ export default function Header() {
 	const title =  canvas.getCanvas().title
 
 	return (
-		<div className="flex w-full justify-between items-center h-[54px] bg-red-400">
+		<div className="flex w-full justify-between items-center h-[54px] border-b border-slate-200 px-7">
 			<div>
 				<span>Zoe</span>
 				<span>{title}</span>
