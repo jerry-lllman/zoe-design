@@ -21,7 +21,7 @@ export default function Left() {
 								style={{ backgroundColor: leftContextValue.leftActiveKey === item.type ? '#1890ff' : '#fff' }}
 								onClick={() => leftContextValue.setLeftActiveKey(item.type)}
 							>
-								<span>{item.title}{item.type}---{leftContextValue.leftActiveKey}</span>
+								<span>{item.title}{item.type}</span>
 							</div>
 						))
 					}

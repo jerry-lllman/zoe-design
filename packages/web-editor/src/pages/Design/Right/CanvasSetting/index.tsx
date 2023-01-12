@@ -1,29 +1,53 @@
+import { Button, InputNumber, message, Upload } from "antd";
+import ColorPicker from "../../../../components/ColorPicker";
+import { useCanvasByContext } from "../../store/hooks";
 
 export default function CanvasSetting() {
+
+	const canvas = useCanvasByContext()
+
+	const canvasData = canvas.getCanvas()
+
 	return (
 		<div>
 			<h3 className="border-b-2 border-gray-100 h-[56px] leading-[56px] px-7 font-medium	 ">画布</h3>
 			<div className="px-7">
-				<div>
-					<div>名称</div>
-					<input />
-				</div>
-				<div>
-					<div>页面标题</div>
-					<input />
-				</div>
-				<div>
-					<div>画布尺寸</div>
-					<div className="flex">
-						<div className="grow">
-							<span>宽</span>
-							<span>320px</span>
+
+				<div className="my-7">
+					<div className="mb-4 text-gray-500">尺寸</div>
+					<div className="grid grid-cols-2 gap-4">
+						<div>
+							<InputNumber
+								min={1}
+								size="large"
+								addonBefore="宽"
+								value={canvasData.style.width}
+								onChange={(width) => canvas.setCanvasBaseInfo({ style: { width: width as number } })}
+							/>
 						</div>
-						<div className="grow">
-							<span>高</span>
-							<span>568px</span>
+						<div>
+							<InputNumber
+								min={1}
+								size="large"
+								addonBefore="高"
+								value={canvasData.style.height}
+								onChange={(height) => canvas.setCanvasBaseInfo({ style: { height: height as number } })}
+							/>
 						</div>
 					</div>
+				</div>
+				<div>
+					<div className="mb-4 text-gray-500">背景</div>
+					<div className="border border-gray-200 rounded-lg p-4">
+						<div className="mb-2">背景色</div>
+						<ColorPicker
+							color={canvasData.style.backgroundColor}
+							onChange={(backgroundColor) => canvas.setCanvasBaseInfo({ style: { backgroundColor } })}
+						/>
+					</div>
+					{/* <Upload> */}
+						<Button className="w-full mt-4" onClick={() => message.warning('功能正在开发中～')}>上传背景图片</Button>
+					{/* </Upload> */}
 				</div>
 			</div>
 		</div>

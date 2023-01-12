@@ -56,7 +56,8 @@ export interface DragBlockStatusType {
 }
 
 export interface CanvasType {
-	[x: string]: any
+	title: string,
+	style: React.CSSProperties,
 	components: ComponentType[]
 }
 
@@ -165,6 +166,11 @@ export default class Canvas {
 	// 获取整个画布数据
 	getCanvas() {
 		return { ...this.canvas }
+	}
+
+	setCanvasBaseInfo(config: Partial<Omit<CanvasType, 'components'>>) {
+		_.merge(this.canvas, config)
+		this.updateApp()
 	}
 
 	getIsActiveBackground() {
