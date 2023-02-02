@@ -121,8 +121,6 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 	clearActiveComponents() {
 		set({ activeComponentIds: new Set() })
 		get().updateBlockStatus({ block: 'hide' })
-		//  get().activeComponentIds.clear() 
-		//  get().updateBlockStatus({ block: 'hide' })
 	},
 	updateActiveComponentsStyle(style) {
 		const components = get().getActiveComponents()
