@@ -1,9 +1,9 @@
-import { useCanvasByContext } from "../store/hooks"
+import { useDesignStore } from "../../../stores/design"
 
 export default function Header() {
-	const canvas = useCanvasByContext()
+	const canvas = useDesignStore(({ canvasData }) => ({ canvasData }))
 
-	const title =  canvas.getCanvas().title
+	const title =  canvas.canvasData.title
 
 	return (
 		<div className="flex w-full justify-between items-center h-[54px] border-b border-slate-200 px-7">

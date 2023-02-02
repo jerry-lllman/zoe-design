@@ -1,18 +1,30 @@
 import React, { useEffect } from "react"
 import TextComponent from "../../../components/TextComponent"
 import ImageComponent from "../../../components/ImageComponent"
-import { useCanvasByContext } from "../store/hooks"
 import DragBlock from "./DragBlock"
 
 import './index.less'
+import { useDesignStore } from "../../../stores/design"
 
 export default function Center() {
 
-	const canvas = useCanvasByContext()
+	const canvas = useDesignStore(({
+		canvasData,
+		isActiveBackground,
+		setIsActiveBackground,
+		clearActiveComponents,
+		setSelectedComponentId,
+		setDomInstance,
+	}) => ({
+		canvasData,
+		isActiveBackground,
+		setIsActiveBackground,
+		clearActiveComponents,
+		setSelectedComponentId,
+		setDomInstance
+	}))
 
-	const canvasData = canvas.getCanvas()
-
-	const { style, components } = canvasData
+	const { style, components } = canvas.canvasData
 
 	const selectCanvas = (e: React.MouseEvent<HTMLDivElement>) => {
 		canvas.clearActiveComponents()
@@ -29,7 +41,7 @@ export default function Center() {
 	}
 
 	useEffect(() => {
-		const handler = () => canvas.getIsActiveBackground() && canvas.setIsActiveBackground(false)
+		const handler = () => canvas.isActiveBackground && canvas.setIsActiveBackground(false)
 
 
 		const editorMainElement = document.getElementById('editor-main')
@@ -66,7 +78,7 @@ export default function Center() {
 									<div key={item.id} className="editor-element absolute z-[1] leading-[1] text-left" style={{ ...item.style }}
 										onClick={addActiveComponent(item.id)}
 									>
-										{item.type === 'text' && <TextComponent component={item} ref={ref => canvas.setDomInstance(item, ref)} />}
+										{item.type === 'text' && <TextComponent component={item} ref={ref => canvas.setDomInstance(item.id, ref)} />}
 										{item.type === 'image' && <ImageComponent component={item} />}
 									</div>
 								))
@@ -78,7 +90,7 @@ export default function Center() {
 					}
 				</div>
 				{
-					canvas.getIsActiveBackground() && (
+					canvas.isActiveBackground && (
 						<div
 							className=" absolute top-0 left-0 border-2 border-solid border-sky-400 shadow-[0_0_0_4px_rgb(61,105,246,24%)]"
 							style={{ width: style.width, height: style.height }}

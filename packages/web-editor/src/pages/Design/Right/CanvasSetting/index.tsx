@@ -1,12 +1,22 @@
 import { Button, InputNumber, message, Upload } from "antd";
 import ColorPicker from "../../../../components/ColorPicker";
-import { useCanvasByContext } from "../../store/hooks";
+import { useDesignStore } from "../../../../stores/design";
 
 export default function CanvasSetting() {
 
-	const canvas = useCanvasByContext()
+	const canvas = useDesignStore(({
+		canvasData,
+		isActiveBackground,
+		setCanvasBaseInfo
+	}) => ({
+		canvasData,
+		isActiveBackground,
+		setCanvasBaseInfo
+	}))
 
-	const canvasData = canvas.getCanvas()
+
+	const { style } = canvas.canvasData
+
 
 	return (
 		<div>
@@ -21,7 +31,7 @@ export default function CanvasSetting() {
 								min={1}
 								size="large"
 								addonBefore="宽"
-								value={canvasData.style.width}
+								value={style.width}
 								onChange={(width) => canvas.setCanvasBaseInfo({ style: { width: width as number } })}
 							/>
 						</div>
@@ -30,8 +40,8 @@ export default function CanvasSetting() {
 								min={1}
 								size="large"
 								addonBefore="高"
-								value={canvasData.style.height}
-								onChange={(height) => canvas.setCanvasBaseInfo({ style: { height: height as number } })}
+								value={style.height}
+							onChange={(height) => canvas.setCanvasBaseInfo({ style: { height: height as number } })}
 							/>
 						</div>
 					</div>
@@ -41,7 +51,7 @@ export default function CanvasSetting() {
 					<div className="border border-gray-200 rounded-lg p-4">
 						<div className="mb-2">背景色</div>
 						<ColorPicker
-							color={canvasData.style.backgroundColor}
+							color={style.backgroundColor}
 							onChange={(backgroundColor) => canvas.setCanvasBaseInfo({ style: { backgroundColor } })}
 						/>
 					</div>

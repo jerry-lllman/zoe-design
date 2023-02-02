@@ -5,26 +5,14 @@ import Left from "./Left";
 import { CLASSIFY } from "./Left/componentTypes";
 import LeftExpand from "./LeftExpand";
 import Right from "./Right";
-import { CanvasContext, LeftContext } from "./store/Context";
-import { useCanvas } from "./store/hooks";
+import { LeftContext } from "./store/Context";
 
 export default function Design() {
-
-	const canvas = useCanvas()
-	const [, forceUpdate] = useReducer((x) => x + 1, 0)
-
-	useEffect(() => {
-		const unsubscribe = canvas.subscribe(forceUpdate)
-		return () => {
-			unsubscribe()
-		}
-	}, [])
 
 	const [leftActiveKey, setLeftActiveKey] = useState(CLASSIFY.WORDS)
 
 	return (
 		<div className="flex flex-col min-w-[1024px] overflow-x-auto h-screen">
-			<CanvasContext.Provider value={canvas}>
 				<Header />
 				<div className="workbench-body relative flex-1">
 					<LeftContext.Provider value={{ leftActiveKey, setLeftActiveKey }}>
@@ -38,7 +26,6 @@ export default function Design() {
 					{/* 右边设置栏 */}
 					<Right />
 				</div>
-			</CanvasContext.Provider>
 		</div>
 	)
 }

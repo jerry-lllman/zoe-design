@@ -1,8 +1,8 @@
 
 import { randomId } from '@web/tools'
 import ImgPath from '../../../../assets/react.svg'
+import { useDesignStore } from '../../../../stores/design'
 import { CLASSIFY } from '../../Left/componentTypes'
-import { useCanvasByContext } from '../../store/hooks'
 import { ImageComponentType } from './typing.'
 
 
@@ -32,7 +32,8 @@ for (let i = 0; i < 100; i++) {
 export default function ImgLib() {
 
 
-	const canvas = useCanvasByContext()
+	const canvas = useDesignStore(({ addComponent }) => ({ addComponent }))
+
 
 	return (
 		<div className='grid grid-cols-3 gap-4 p-[24px] text-center'>

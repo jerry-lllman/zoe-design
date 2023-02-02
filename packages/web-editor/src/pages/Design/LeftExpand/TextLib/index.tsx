@@ -1,6 +1,6 @@
 import { randomId } from "@web/tools"
+import { useDesignStore } from "../../../../stores/design"
 import { CLASSIFY } from "../../Left/componentTypes"
-import { useCanvasByContext } from "../../store/hooks"
 import { TextComponentType } from "./typing"
 
 
@@ -39,8 +39,8 @@ export const textComponents: TextComponentType[] = [
 	}
 ]
 export default function TextLib() {
-
-	const canvas = useCanvasByContext()
+	
+	const canvas = useDesignStore(({ addComponent }) => ({ addComponent }))
 
 	return (
 		<div className="grid grid-cols-3 gap-4 p-[24px] text-center">

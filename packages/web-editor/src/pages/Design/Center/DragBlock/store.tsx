@@ -1,6 +1,4 @@
-import { DragGripStatusType } from "../../store/canvas"
-import { useCanvasByContext } from "../../store/hooks"
-
+import { DragGripStatusType, useDesignStore } from "../../../../stores/design"
 
 const calculate = (style: { width: number, height: number, top: number, left: number }) => {
 	const { width, height, top, left } = style
@@ -19,7 +17,16 @@ const calculate = (style: { width: number, height: number, top: number, left: nu
 
 export default function useDragBlockStore() {
 
-	const canvas = useCanvasByContext()
+	const canvas = useDesignStore(({
+		updateBlockStatus,
+		updateActiveComponentsStyle,
+		getDragBlockInfo
+	}) => ({
+		updateBlockStatus,
+		updateActiveComponentsStyle,
+		getDragBlockInfo
+	}))
+
 
 	// 选中的目标被点击事件
 	const onMouseDown = (e: React.MouseEvent<HTMLElement, MouseEvent>) => {
@@ -36,7 +43,18 @@ export default function useDragBlockStore() {
 			let disY = pageY - startY
 
 			canvas.updateBlockStatus({ block: 'moving' })
-			canvas.updateActiveComponentsStyle({ left: disX, top: disY })
+
+			const style = { left: disX, top: disY }
+
+			const dragStyle = canvas.getDragBlockInfo().style
+
+			Object.keys(style).forEach(key => {
+				// @ts-ignore
+				style[key] += dragStyle[key]
+			})
+
+
+			canvas.updateActiveComponentsStyle(style)
 
 			// 更新起点
 			startX = pageX
@@ -55,24 +73,6 @@ export default function useDragBlockStore() {
 		document.addEventListener('mouseup', mouseUp)
 	}
 
-	const calculateMap = {
-		text: (style: { width: number, height: number, top: number, left: number }) => {
-			const { width, height, top, left } = style
-	
-			return {
-				east: { width },
-				southeast: { width },
-				south: { height },
-				southwest: { width: -width, height, left },
-				west: { width: -width, left },
-				northwest: { width: -width, height: -height, top, left },
-				north: { height: -height, top },
-				northeast: { width, height: -height, top }
-			}
-		}
-	}
-	
-
 	// 点击选中的块四周设置大小的点的事件
 	const onGripMouseDown = (type: DragGripStatusType) => {
 
@@ -90,6 +90,14 @@ export default function useDragBlockStore() {
 				canvas.updateBlockStatus({ block: 'moving', grip: type })
 
 				const style = calculate({ width: disX, height: disY, top: disY, left: disX })[type]
+
+				const dragStyle = canvas.getDragBlockInfo().style
+
+				Object.keys(style).forEach(key => {
+					// @ts-ignore
+					style[key] += dragStyle[key]
+				})
+
 				canvas.updateActiveComponentsStyle(style)
 
 				// 更新起点

@@ -1,5 +1,5 @@
 import classNames from 'classnames'
-import { DragGripStatusType } from '../../store/canvas'
+import { DragGripStatusType } from '../../../../stores/design'
 import GripComp from './GripComp'
 import useDragBlockStore from './store'
 
