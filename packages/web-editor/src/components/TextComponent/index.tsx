@@ -19,7 +19,6 @@ const Text = (props: TextComponentProps, ref: React.LegacyRef<HTMLDivElement>) =
 				lineHeight: 1.2,
 				width: component.style.width,
 				height: component.style.height,
-
 				overflow: 'visible'
 			}}
 		>
@@ -43,9 +42,7 @@ const Text = (props: TextComponentProps, ref: React.LegacyRef<HTMLDivElement>) =
 					>
 						<span
 							className="text"
-							style={{
-								fontSize: component.style.fontSize
-							}}
+							style={component.style}
 						>{component.value}</span>
 					</div>
 				</div>

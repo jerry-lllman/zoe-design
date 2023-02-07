@@ -5,7 +5,9 @@ import useDragBlockStore from './store'
 
 
 export default function DragBlock() {
-	const { dragBlockInfo, onMouseDown, onGripMouseDown } = useDragBlockStore()
+	const { dragBlockInfo, getActiveComponents, onMouseDown, onGripMouseDown, isShowTextEditor, setIsShowTextEditor } = useDragBlockStore()
+
+	const activeComponents = getActiveComponents()
 
 	if (dragBlockInfo.blockStatus.block === 'hide') return null
 
@@ -27,6 +29,7 @@ export default function DragBlock() {
 			className={blockClass}
 			style={dragBlockInfo.style}
 			onMouseDown={onMouseDown}
+			onDoubleClick={() => setIsShowTextEditor(true)}
 		>
 			{isShowGrip('east') && (<GripComp className="left-full top-1/2 -translate-x-1/2 -translate-y-1/2 border-" gripContentClassName="w-[6px] h-[11px]" onMouseDown={onGripMouseDown('east')} />)}
 			{isShowGrip('southeast') && (<GripComp className="left-full top-full -translate-x-1/2 -translate-y-1/2" onMouseDown={onGripMouseDown('southeast')} />)}
@@ -36,6 +39,19 @@ export default function DragBlock() {
 			{isShowGrip('northwest') && (<GripComp className="left-0 top-0 -translate-x-1/2 -translate-y-1/2" onMouseDown={onGripMouseDown('northwest')} />)}
 			{isShowGrip('north') && (<GripComp className="left-1/2 top-0 -translate-x-1/2 -translate-y-1/2" gripContentClassName="w-[11px] h-[6px]" onMouseDown={onGripMouseDown('north')} />)}
 			{isShowGrip('northeast') && (<GripComp className="left-full top-0 -translate-x-1/2 -translate-y-1/2" onMouseDown={onGripMouseDown('northeast')} />)}
+			{/* 组建单独封装 */}
+			{isShowTextEditor && activeComponents.length === 1 && activeComponents[0].type === 'text' && (
+				<div
+					className=' relative z-20'
+					style={{ width: dragBlockInfo.style.width, height: dragBlockInfo.style.height }}
+					onMouseDown={e => e.stopPropagation()}
+					onDoubleClick={e => e.stopPropagation()}
+				>
+					<div className=' leading-[1.2] h-full bg-slate-100  focus-visible:outline-none' contentEditable suppressContentEditableWarning onBlur={() => setIsShowTextEditor(false)}>
+						<span style={{ fontSize: activeComponents[0].style.fontSize }}>{activeComponents[0].value}</span>
+					</div>
+				</div>
+			)}
 		</div>
 	)
 }

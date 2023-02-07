@@ -1,13 +1,39 @@
+import { Skeleton } from "antd";
+import React, { Suspense } from "react";
 import { useDesignStore } from "../../../stores/design";
-import CanvasSetting from "./CanvasSetting";
+import { ComponentType } from "../LeftExpand/typing";
+const CanvasSetting = React.lazy(() => import("./CanvasSetting"));
+const TextSetting = React.lazy(() => import("./TextSetting"))
+
+const renderSetting = {
+	canvas: () => <CanvasSetting />,
+	group: () => <div>group</div>,
+	text: () => <TextSetting />,
+	image: ()=> <div>image</div>
+}
+
+type SettingType = 'canvas' | 'group' | ComponentType["type"]
 
 export default function Right() {
 
-	const canvas = useDesignStore(({isActiveBackground, getActiveComponents }) => ({ isActiveBackground, getActiveComponents }))
+	const canvas = useDesignStore(({ getActiveComponents }) => ({ getActiveComponents }))
+
+	let type: SettingType = 'canvas'
+
+	const components = canvas.getActiveComponents()
+
+	if (components.length > 1) {
+		type = 'group'
+	} else if (components.length === 1) {
+		type = components[0].type
+	}
+
 
 	return (
 		<div className="w-[276px] absolute top-0 right-0 bottom-0">
-			{(canvas.isActiveBackground || !canvas.getActiveComponents().length ) && <CanvasSetting />}
+			<Suspense fallback={<Skeleton />}>
+				{renderSetting[type]()}
+			</Suspense>
 		</div>
 	)
 }

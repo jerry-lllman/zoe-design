@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { DragGripStatusType, useDesignStore } from "../../../../stores/design"
 
 const calculate = (style: { width: number, height: number, top: number, left: number }) => {
@@ -18,12 +19,14 @@ const calculate = (style: { width: number, height: number, top: number, left: nu
 export default function useDragBlockStore() {
 
 	const canvas = useDesignStore(({
+		getActiveComponents,
 		updateBlockStatus,
-		updateActiveComponentsStyle,
+		updateActiveComponents,
 		getDragBlockInfo
 	}) => ({
+		getActiveComponents,
 		updateBlockStatus,
-		updateActiveComponentsStyle,
+		updateActiveComponents,
 		getDragBlockInfo
 	}))
 
@@ -54,7 +57,7 @@ export default function useDragBlockStore() {
 			})
 
 
-			canvas.updateActiveComponentsStyle(style)
+			canvas.updateActiveComponents({ style })
 
 			// 更新起点
 			startX = pageX
@@ -98,7 +101,7 @@ export default function useDragBlockStore() {
 					style[key] += dragStyle[key]
 				})
 
-				canvas.updateActiveComponentsStyle(style)
+				canvas.updateActiveComponents({style})
 
 				// 更新起点
 				startX = pageX
@@ -118,9 +121,14 @@ export default function useDragBlockStore() {
 		}
 	}
 
+	const [isShowTextEditor, setIsShowTextEditor] = useState(false)
+
 	return {
 		dragBlockInfo: canvas.getDragBlockInfo(),
+		getActiveComponents: canvas.getActiveComponents,
 		onMouseDown,
-		onGripMouseDown
+		onGripMouseDown,
+		isShowTextEditor,
+		setIsShowTextEditor		
 	}
 }

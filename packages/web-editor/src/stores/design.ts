@@ -1,6 +1,6 @@
 
 import { create } from 'zustand'
-import _, { cloneDeep } from 'lodash-es'
+import _ from 'lodash-es'
 import { randomId } from '@web/tools'
 import { ComponentType } from '../pages/Design/LeftExpand/typing'
 
@@ -48,7 +48,7 @@ interface DesignStoreType {
 	setSelectedComponentId: (componentId: string, isGroup?: boolean) => void
 	getActiveComponents: () => ComponentType[]
 	clearActiveComponents: () => void
-	updateActiveComponentsStyle: (style: Partial<React.CSSProperties>) => void
+	updateActiveComponents: (component: DeepPartial<ComponentType>) => void
 	blockStatus: DragBlockStatusType
 	updateBlockStatus: (status: Partial<DragBlockStatusType>) => void
 	getDragBlockInfo: () => DragBlockInfoType
@@ -113,7 +113,7 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 		const components: ComponentType[] = []
 		get().activeComponentIds.forEach(id => {
 			const comp = get().canvasData.components.find(component => component.id === id) as ComponentType
-			components.push(cloneDeep(comp))
+			components.push(_.cloneDeep(comp))
 		})
 		return components
 	},
@@ -122,30 +122,31 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 		set({ activeComponentIds: new Set() })
 		get().updateBlockStatus({ block: 'hide' })
 	},
-	updateActiveComponentsStyle(style) {
+
+	updateActiveComponents(component) {
 		const components = get().getActiveComponents()
-		components.forEach(component => {
+		components.forEach(item => {
 			const isZoomGrip = ['southeast', 'southwest', 'northwest', 'northeast'].includes(get().blockStatus.grip)
 
-			if (component.type === 'text') {
-				const isChangeWidth = !_.isNil(style.width) && (component.style.width as number) - (style.width as number) !== 0
+			if (item.type === 'text') {
+				const isChangeWidth = !_.isNil(component.style?.width) && (item.style.width as number) - (component.style?.width as number) !== 0
 				// 缩放且改变了宽度需要重新计算高度
-				if (isZoomGrip && isChangeWidth) {
+				if ((isZoomGrip && isChangeWidth)) {
 					// 1. 计算出一行能容下几个字 										 										  													oneLineTextCount = oldWidth / oldFontSize
 					// 2. 根据新的 width 计算出新的 fontSize			  										 														newFontSize = newWidth / oneLineTextCount
 					// 3. 根据新的 fontSize * 原高度能容纳下的行数(oldHeight / oldFontSize)计算出新的 height						newHeight = newFontSize * (oldHeight / oldFontSize)
 
-					const oneLineTextCount = (component.style.width as number) / (component.style.fontSize as number)
-					const newFontSize = (style.width as number) / oneLineTextCount
-					const newHeight = newFontSize * ((component.style.height as number) / (component.style.fontSize as number))
-					style.fontSize = newFontSize
-					style.height = newHeight
-				} else {
+					const oneLineTextCount = (item.style.width as number) / (item.style.fontSize as number)
+					const newFontSize = (component.style?.width as number) / oneLineTextCount
+					const newHeight = newFontSize * ((item.style.height as number) / (item.style.fontSize as number));
+					component.style!.fontSize = newFontSize
+					component.style!.height = newHeight
+				}  else {
 					// 当宽度改变时字体可能会换行，所以需要更新根据文本的高度更新容器的高度
-					style.height = (componentInstances.get(component.id) as HTMLDivElement).clientHeight
+					component.style = { ...(component.style || {}), height: (componentInstances.get(item.id) as HTMLDivElement).clientHeight }
 				}
 			}
-			_.merge(component.style, style)
+			_.merge(item, component)
 		})
 
 		const canvasData = get().canvasData
