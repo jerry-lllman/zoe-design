@@ -119,8 +119,8 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 	},
 
 	clearActiveComponents() {
-		set({ activeComponentIds: new Set() })
 		get().updateBlockStatus({ block: 'hide' })
+		set({ activeComponentIds: new Set() })
 	},
 
 	updateActiveComponents(component) {
@@ -141,7 +141,7 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 					const newHeight = newFontSize * ((item.style.height as number) / (item.style.fontSize as number));
 					component.style!.fontSize = newFontSize
 					component.style!.height = newHeight
-				}  else {
+				} else if (_.isNil(component.style?.height)) {
 					// 当宽度改变时字体可能会换行，所以需要更新根据文本的高度更新容器的高度
 					component.style = { ...(component.style || {}), height: (componentInstances.get(item.id) as HTMLDivElement).clientHeight }
 				}
@@ -169,6 +169,7 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 	updateBlockStatus(status) {
 		if (status.block === 'hide') {
 			status.grip = ''
+			get().updateActiveComponents({ style: { visibility: 'visible' }})
 		}
 		set({ blockStatus: { ...get().blockStatus, ...status } })
 	},

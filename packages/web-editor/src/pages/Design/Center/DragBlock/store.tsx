@@ -123,12 +123,26 @@ export default function useDragBlockStore() {
 
 	const [isShowTextEditor, setIsShowTextEditor] = useState(false)
 
+	const editTextHandle = () => {
+		setIsShowTextEditor(true)
+		canvas.updateActiveComponents({ style: { visibility: 'hidden' } })
+	}
+
+	const onTextEditorInput = (e: React.FormEvent<HTMLDivElement>) => {
+		const height = e.target.clientHeight
+		const width = e.target.clientWidth
+		canvas.updateActiveComponents({ value: e.target.innerText, style: { height, width } })
+	}
+
 	return {
 		dragBlockInfo: canvas.getDragBlockInfo(),
 		getActiveComponents: canvas.getActiveComponents,
 		onMouseDown,
 		onGripMouseDown,
 		isShowTextEditor,
-		setIsShowTextEditor		
+		setIsShowTextEditor,
+		onTextEditorInput,
+		editTextHandle,
+		updateActiveComponents: canvas.updateActiveComponents
 	}
 }
