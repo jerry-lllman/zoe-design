@@ -104,7 +104,8 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 	// 是否多选
 	setSelectedComponentId(componentId, isGroup = false) {
 		if (get().activeComponentIds.has(componentId)) return
-		!isGroup && get().clearActiveComponents()
+		// !isGroup && get().clearActiveComponents()
+		get().clearActiveComponents()
 		get().addActiveComponent(componentId)
 		get().updateBlockStatus({ block: 'static' })
 	},
@@ -128,8 +129,10 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 		components.forEach(item => {
 			const isZoomGrip = ['southeast', 'southwest', 'northwest', 'northeast'].includes(get().blockStatus.grip)
 
+			const newComponents = _.cloneDeep(component)
+
 			if (item.type === 'text') {
-				const isChangeWidth = !_.isNil(component.style?.width) && (item.style.width as number) - (component.style?.width as number) !== 0
+				const isChangeWidth = !_.isNil(newComponents.style?.width) && (item.style.width as number) - (newComponents.style?.width as number) !== 0
 				// 缩放且改变了宽度需要重新计算高度
 				if ((isZoomGrip && isChangeWidth)) {
 					// 1. 计算出一行能容下几个字 										 										  													oneLineTextCount = oldWidth / oldFontSize
@@ -137,16 +140,17 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 					// 3. 根据新的 fontSize * 原高度能容纳下的行数(oldHeight / oldFontSize)计算出新的 height						newHeight = newFontSize * (oldHeight / oldFontSize)
 
 					const oneLineTextCount = (item.style.width as number) / (item.style.fontSize as number)
-					const newFontSize = (component.style?.width as number) / oneLineTextCount
+					const newFontSize = (newComponents.style?.width as number) / oneLineTextCount
 					const newHeight = newFontSize * ((item.style.height as number) / (item.style.fontSize as number));
-					component.style!.fontSize = newFontSize
-					component.style!.height = newHeight
-				} else if (_.isNil(component.style?.height)) {
+					newComponents.style!.fontSize = newFontSize
+					newComponents.style!.height = newHeight
+				} else if (_.isNil(newComponents.style?.height)) {
 					// 当宽度改变时字体可能会换行，所以需要更新根据文本的高度更新容器的高度
-					component.style = { ...(component.style || {}), height: (componentInstances.get(item.id) as HTMLDivElement).clientHeight }
+					newComponents.style = { ...(newComponents.style || {}), height: (componentInstances.get(item.id) as HTMLDivElement).clientHeight }
 				}
 			}
-			_.merge(item, component)
+			const res = _.merge(item, newComponents)
+			console.log(res)
 		})
 
 		const canvasData = get().canvasData
@@ -169,7 +173,7 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 	updateBlockStatus(status) {
 		if (status.block === 'hide') {
 			status.grip = ''
-			get().updateActiveComponents({ style: { visibility: 'visible' }})
+			get().updateActiveComponents({ style: { visibility: 'visible' } })
 		}
 		set({ blockStatus: { ...get().blockStatus, ...status } })
 	},
@@ -210,6 +214,7 @@ const useDesignStore = create<DesignStoreType>((set, get): DesignStoreType => ({
 		})
 
 		dragBlockInfo.style.width = maxRight - dragBlockInfo.style.left
+		console.log(maxHeight - dragBlockInfo.style.top)
 		dragBlockInfo.style.height = maxHeight - dragBlockInfo.style.top
 
 		if (components.length > 1) {

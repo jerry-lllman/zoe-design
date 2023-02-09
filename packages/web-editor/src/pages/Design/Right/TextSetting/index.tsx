@@ -10,7 +10,7 @@ export default function TextSetting() {
 	const componentData = canvas.getActiveComponents()[0]
 
 	const TextBaseSetting = (
-		<div>
+		<div className=" px-7">
 			<div>
 				<div>样式</div>
 				<ColorPicker color={componentData.style.color} onChange={ color => canvas.updateActiveComponents({ style: { color }}) } />
@@ -27,13 +27,13 @@ export default function TextSetting() {
 		{
 			key: 'animate',
 			label: '动画',
-			children: <div>组件待开发</div>
+			children: <div className="px-7">组件待开发</div>
 		}
 	]
 
 	return (
-		<div>
-			<Tabs items={items} />
+		<div >
+			<Tabs tabBarStyle={{ padding: '0 24px' }}  items={items} />
 		</div>
 	)
 }

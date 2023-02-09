@@ -35,7 +35,7 @@ export default function Center() {
 	const addActiveComponent = (id: string) => {
 		return (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
 			e.stopPropagation()
-			canvas.setSelectedComponentId(id, !e.metaKey)
+			canvas.setSelectedComponentId(id, e.metaKey)
 			canvas.setIsActiveBackground(false)
 		}
 	}

@@ -9,29 +9,13 @@ export const textComponents: TextComponentType[] = [
 		id: randomId(),
 		type: 'text',
 		rootType: CLASSIFY.WORDS,
-		title: '标题',
-		value: '双击编辑标题内容',
-		icon: '',
-		style: {
-			top: 100,
-			left: 100,
-			width: 10,
-			height: 12,
-			fontSize: 10,
-			fontWeight: 700
-		}
-	},
-	{
-		id: randomId(),
-		type: 'text',
-		rootType: CLASSIFY.WORDS,
-		title: '正文',
-		value: '双击编辑一小段正文',
+		title: '文字',
+		value: '双击编辑文字内容',
 		icon: '',
 		style: {
 			top: 100,
 			left: 0,
-			width: 298,
+			width: 256,
 			height: 38,
 			fontSize: 32,
 			fontWeight: 400

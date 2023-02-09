@@ -129,9 +129,8 @@ export default function useDragBlockStore() {
 	}
 
 	const onTextEditorInput = (e: React.FormEvent<HTMLDivElement>) => {
-		const height = e.target.clientHeight
-		const width = e.target.clientWidth
-		canvas.updateActiveComponents({ value: e.target.innerText, style: { height, width } })
+		const { clientHeight: height, clientWidth: width, innerText: value } = e.target as HTMLDivElement
+		canvas.updateActiveComponents({ value, style: { height, width } })
 	}
 
 	return {

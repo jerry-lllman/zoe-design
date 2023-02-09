@@ -26,7 +26,7 @@ export default function DragBlock() {
 				onMouseDown={e => e.stopPropagation()}
 				onDoubleClick={e => e.stopPropagation()}
 			>
-				<div>
+				<div style={activeComponents[0].style}>
 					<div
 						className=' h-full focus-visible:outline-none'
 						contentEditable

@@ -32,7 +32,7 @@ export default function CanvasSetting() {
 								size="large"
 								addonBefore="宽"
 								value={style.width}
-								onChange={(width) => canvas.setCanvasBaseInfo({ style: { width: width as number } })}
+								onChange={(width: number) => canvas.setCanvasBaseInfo({ style: { width } })}
 							/>
 						</div>
 						<div>
@@ -41,7 +41,7 @@ export default function CanvasSetting() {
 								size="large"
 								addonBefore="高"
 								value={style.height}
-							onChange={(height) => canvas.setCanvasBaseInfo({ style: { height: height as number } })}
+							onChange={(height: number) => canvas.setCanvasBaseInfo({ style: { height } })}
 							/>
 						</div>
 					</div>
